@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+  공통 레이아웃 프래그먼트 (iwish · curated select-shop)
+  - head(title)        : 메타 + Pretendard + Tailwind + 토큰 + 컴포넌트
+  - logo(w)            : iwish 로고 SVG (w = px width)
+  - appHeader(active)  : 상단 네비 (active: 'wishlist' | 'collections' | 'stats')
+  - footer             : 푸터
+  ★ 색/폰트/컴포넌트 톤은 이 파일에서만 바꾸면 전체 화면에 반영됩니다.
+  (이 파일은 프래그먼트 모음일 뿐 통째로 렌더되지 않음. 아래 head 는 IDE 검사 충족용.)
+-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iwish</title>
+</head>
+
+<!-- assets: 각 페이지 <head> 안에서 th:replace 로 끼워 넣는다 (메타/타이틀은 페이지가 직접 보유) -->
+<th:block th:fragment="assets">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ===== 토큰 ===== -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ink:'#15161A', muted:'#8A8F98', line:'#EDEDED',
+                        canvas:'#FAFAFA', surface:'#FFFFFF',
+                        mint: { light:'#E6FAF7', DEFAULT:'#10D9C4', deep:'#0BB5A3' },
+                        success:'#16B364', danger:'#F23E3E'
+                    },
+                    fontFamily: { sans: ['Pretendard','system-ui','sans-serif'] },
+                    borderRadius: { card:'16px', control:'10px', img:'14px' },
+                    boxShadow: { card:'0 1px 3px rgba(0,0,0,0.06)' },
+                    maxWidth: { app:'1120px' }
+                }
+            }
+        }
+    </script>
+
+    <!-- ===== 베이스 ===== -->
+    <style>
+        * { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Pretendard', system-ui, -apple-system, sans-serif; letter-spacing: -0.01em; font-size: 16px; }
+
+        .tnum { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+
+        /* select: 기본 화살표 제거 + 미니멀 화살표 */
+        .kk-select {
+            -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238A8F98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+            padding-right: 38px;
+        }
+
+        .kk-check { accent-color:#10D9C4; width:16px; height:16px; }
+
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+        input[type=number] { appearance:textfield; }
+
+        /* 상품 카드 호버: 이미지 살짝 확대 + 카드 살짝 떠오름 */
+        .pcard img { transition: transform .5s cubic-bezier(.22,.61,.36,1); }
+        .pcard:hover img { transform: scale(1.03); }
+    </style>
+
+    <!-- ===== 컴포넌트 ===== -->
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-primary  { @apply inline-flex items-center justify-center gap-1.5 rounded-control bg-mint px-5 py-2.5 text-[15px] font-medium text-white transition hover:bg-mint-deep; }
+            .btn-primary-sm{ @apply inline-flex items-center justify-center gap-1 rounded-control bg-mint px-4 py-2.5 text-[14px] font-medium text-white transition hover:bg-mint-deep; }
+            .btn-line     { @apply inline-flex items-center justify-center gap-1.5 rounded-control border border-line bg-surface px-5 py-2.5 text-[15px] font-medium text-ink transition hover:border-mint hover:text-mint-deep; }
+            .btn-line-sm  { @apply inline-flex items-center justify-center gap-1 rounded-control border border-line bg-surface px-4 py-2.5 text-[14px] font-medium text-ink transition hover:border-mint hover:text-mint-deep; }
+            .btn-ghost-sm { @apply inline-flex items-center justify-center rounded-control px-2.5 py-1.5 text-[14px] font-medium text-muted transition hover:text-ink; }
+            .input        { @apply w-full rounded-control border border-line bg-surface px-4 py-3 text-[16px] font-normal text-ink placeholder:text-muted/70 transition focus:border-mint focus:outline-none focus:ring-4 focus:ring-mint/10; }
+            .label        { @apply mb-1.5 block text-[14px] font-medium tracking-wide text-muted; }
+            .card         { @apply rounded-card border border-canvas bg-surface shadow-card; }
+            .chip         { @apply inline-flex items-center rounded-full bg-mint-light px-2 py-0.5 text-[12px] font-medium text-mint-deep; }
+        }
+    </style>
+</th:block>
+
+<body>
+
+<!-- ===================== 로고 ===================== -->
+<svg th:fragment="logo(w)" th:attr="width=${w}" viewBox="0 0 150 50" class="overflow-visible"
+     aria-label="iwish" xmlns="http://www.w3.org/2000/svg">
+    <text x="0" y="38" font-size="38" font-weight="500" font-style="italic" letter-spacing="-0.5"
+          fill="#15161A" font-family="Pretendard, sans-serif">ıwısh</text>
+    <circle cx="10" cy="11.5" r="4" fill="#10D9C4"/>
+    <circle cx="56.5" cy="11.5" r="4" fill="#10D9C4"/>
+</svg>
+
+<!-- ===================== 상단 네비 ===================== -->
+<header th:fragment="appHeader(active)" class="border-b border-line bg-surface/90 backdrop-blur">
+    <div class="mx-auto flex max-w-app items-center justify-between px-6 py-5 lg:px-8">
+        <div class="flex items-center gap-9">
+            <a th:href="@{/wishlist}" class="block leading-none">
+                <svg th:replace="~{fragments/layout :: logo(96)}"></svg>
+            </a>
+            <nav class="hidden items-center gap-7 sm:flex text-[16px]">
+                <a th:href="@{/wishlist}" class="transition"
+                   th:classappend="${active == 'wishlist'} ? 'font-medium text-ink' : 'text-muted hover:text-ink'">wishlist</a>
+                <a th:href="@{/collections}" class="transition"
+                   th:classappend="${active == 'collections'} ? 'font-medium text-ink' : 'text-muted hover:text-ink'">lookbooks</a>
+                <a th:href="@{/stats}" class="transition"
+                   th:classappend="${active == 'stats'} ? 'font-medium text-ink' : 'text-muted hover:text-ink'">stats</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4 text-[15px]">
+            <span class="text-muted"><span sec:authentication="name" class="font-medium text-ink">user</span></span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="text-muted transition hover:text-ink">logout</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- ===================== 푸터 ===================== -->
+<footer th:fragment="footer" class="border-t border-line py-10 text-center text-[12px] font-normal text-muted">
+    © 2026 iwish
+</footer>
+
+</body>
+</html>

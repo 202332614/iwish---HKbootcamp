@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${editing} ? '위시템 수정 · iwish' : 'new wish! · iwish'">new wish! · iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+
+    <header th:replace="~{fragments/layout :: appHeader('wishlist')}"></header>
+
+    <main class="mx-auto max-w-2xl px-6 py-12 lg:py-16">
+        <a th:href="@{/wishlist}" class="mb-6 inline-block text-[14px] font-normal text-muted hover:text-ink">← wishlist</a>
+        <h1 class="mb-8 text-[26px] font-semibold tracking-tight" th:text="${editing} ? '위시템 수정' : 'new wish!'">new wish!</h1>
+
+        <!-- POST /wishlist or /wishlist/{id} (CSRF auto) -->
+        <form th:action="@{${actionUrl}}" th:object="${wishForm}" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div>
+                <label for="name" class="label">상품명</label>
+                <input type="text" id="name" th:field="*{name}" class="input" placeholder="예: 오버핏 린넨 셔츠">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="price" class="label">가격</label>
+                    <div class="relative">
+                        <input type="number" id="price" th:field="*{price}" min="0" step="1" class="input pl-7 tnum" placeholder="42000">
+                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-muted">₩</span>
+                    </div>
+                    <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+                </div>
+                <div>
+                    <label for="shopName" class="label">쇼핑몰</label>
+                    <input type="text" id="shopName" th:field="*{shopName}" class="input" placeholder="예: 무신사">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="category" class="label">카테고리</label>
+                    <select id="category" th:field="*{category}" class="input kk-select">
+                        <option value="" disabled>선택</option>
+                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c}">cat</option>
+                    </select>
+                    <p th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+                </div>
+                <div>
+                    <label for="priority" class="label">우선순위</label>
+                    <select id="priority" th:field="*{priority}" class="input kk-select">
+                        <option value="" disabled>선택</option>
+                        <option th:value="1">1 (가장 높음)</option>
+                        <option th:value="2">2</option><option th:value="3">3</option><option th:value="4">4</option>
+                        <option th:value="5">5 (가장 낮음)</option>
+                    </select>
+                    <p th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+                </div>
+            </div>
+
+            <div>
+                <label for="productUrl" class="label">상품 URL</label>
+                <input type="url" id="productUrl" th:field="*{productUrl}" class="input" placeholder="https://">
+                <p class="mt-1.5 text-[13px] font-normal text-muted">썸네일을 비우면 상품 URL의 대표 이미지를 자동으로 가져와요.</p>
+            </div>
+
+            <div>
+                <label for="thumbnailUrl" class="label">썸네일 URL</label>
+                <input type="url" id="thumbnailUrl" th:field="*{thumbnailUrl}" class="input" placeholder="https://image...">
+            </div>
+
+            <div>
+                <label for="imageFile" class="label">이미지 업로드</label>
+                <input type="file" id="imageFile" name="imageFile" accept="image/*"
+                       class="block w-full text-[14px] text-muted file:mr-3 file:cursor-pointer file:rounded-control file:border-0 file:bg-mint file:px-4 file:py-2.5 file:text-[14px] file:font-medium file:text-white hover:file:bg-mint-deep">
+                <p class="mt-1.5 text-[13px] font-normal text-muted">파일을 올리면 썸네일로 사용해요. (URL·자동추출보다 우선)</p>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="btn-primary px-7 py-3 text-[15px]" th:text="${editing} ? 'save' : 'add'">add</button>
+                <a th:href="@{/wishlist}" class="btn-line px-7 py-3 text-[15px]">cancel</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

@@ -1,0 +1,7 @@
+// JDK 21 toolchain 자동 다운로드를 위해 foojay 리졸버 추가
+// (로컬에 JDK 21이 없어도 Gradle이 Foojay Disco API로 받아 사용)
+plugins {
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+rootProject.name = 'wishlist'

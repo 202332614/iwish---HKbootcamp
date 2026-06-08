@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-surface text-ink">
+
+    <!-- nav -->
+    <header class="border-b border-line">
+        <div class="mx-auto flex max-w-app items-center justify-between px-6 py-5 lg:px-8">
+            <svg th:replace="~{fragments/layout :: logo(96)}"></svg>
+            <div class="flex items-center gap-5 text-[16px]">
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="text-muted transition hover:text-ink">로그인</a>
+                <a sec:authorize="!isAuthenticated()" th:href="@{/signup}" class="btn-primary-sm">회원가입</a>
+                <a sec:authorize="isAuthenticated()" th:href="@{/wishlist}" class="btn-primary-sm">내 위시리스트</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="text-muted transition hover:text-ink">로그아웃</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- hero (headline stays english) -->
+    <section class="mx-auto max-w-app px-6 pt-24 pb-20 lg:px-8 lg:pt-32">
+        <p class="mb-6 text-[14px] font-medium tracking-[0.12em] text-mint-deep">큐레이션 옷장</p>
+        <h1 class="max-w-3xl text-[44px] font-semibold leading-[1.1] tracking-tight text-ink lg:text-[64px]">
+            the things you<br>want to wear,<br><span class="italic text-muted">in one place.</span>
+        </h1>
+        <p class="mt-8 max-w-md text-[17px] font-normal leading-relaxed text-muted">
+            사고 싶은 옷을 모으고, 예산을 정하고, 나만의 룩을 만들어요.
+        </p>
+        <div class="mt-10 flex items-center gap-3">
+            <a sec:authorize="!isAuthenticated()" th:href="@{/signup}" class="btn-primary px-7 py-3 text-[16px]">시작하기</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn-line px-7 py-3 text-[16px]">로그인</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/wishlist}" class="btn-primary px-7 py-3 text-[16px]">내 위시리스트</a>
+        </div>
+    </section>
+
+    <!-- editorial preview strip -->
+    <section class="mx-auto max-w-app px-6 pt-16 pb-28 lg:px-8 lg:pt-24">
+        <div class="grid grid-cols-2 gap-5 sm:grid-cols-4">
+            <figure class="group">
+                <div class="relative aspect-[3/4] overflow-hidden rounded-img bg-[#EAECEF]">
+                    <img src="https://michiko-london.kr/web/product/big/202605/b8779c5fd22fbbb2cee6cfd70a143fc4.jpg" alt="stripe halter swim set"
+                         loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                </div>
+                <figcaption class="mt-3"><p class="text-[13px] text-muted">musinsa</p><p class="text-[15px] font-medium">stripe halter swim set</p></figcaption>
+            </figure>
+            <figure class="group mt-8 sm:mt-10">
+                <div class="relative aspect-[3/4] overflow-hidden rounded-img bg-[#E3F2EF]">
+                    <img src="https://michiko-london.kr/web/product/big/202605/9cbbe6c646be21d923ffd531a6f1cc33.jpg" alt="lace satin shorts"
+                         loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                </div>
+                <figcaption class="mt-3"><p class="text-[13px] text-muted">29CM</p><p class="text-[15px] font-medium">lace satin shorts</p></figcaption>
+            </figure>
+            <figure class="group">
+                <div class="relative aspect-[3/4] overflow-hidden rounded-img bg-[#EAECEF]">
+                    <img src="https://michiko-london.kr/web/product/big/202605/bdd1503951850d8e206be2e010221fd3.jpg" alt="sleeveless pants set"
+                         loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                </div>
+                <figcaption class="mt-3"><p class="text-[13px] text-muted">musinsa</p><p class="text-[15px] font-medium">sleeveless pants set</p></figcaption>
+            </figure>
+            <figure class="group mt-8 sm:mt-10">
+                <div class="relative aspect-[3/4] overflow-hidden rounded-img bg-[#EAECEF]">
+                    <img src="https://michiko-london.kr/web/product/big/202605/f4f5bc0495724f419bfc1ed6bf8e0815.jpg" alt="ruffled pajama set"
+                         loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                </div>
+                <figcaption class="mt-3"><p class="text-[13px] text-muted">heights</p><p class="text-[15px] font-medium">ruffled pajama set</p></figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- how (mint bar + bold black number) -->
+    <section>
+        <div class="mx-auto grid max-w-app grid-cols-1 gap-8 px-6 pb-28 md:grid-cols-3 md:gap-10 lg:px-8 lg:pb-32">
+            <div class="border-l-2 border-mint pl-5">
+                <p class="text-[16px] font-semibold tracking-tight text-ink">01</p>
+                <h3 class="mt-3 text-[19px] font-medium">모으기</h3>
+                <p class="mt-2 text-[15px] leading-relaxed text-muted">상품명·가격·쇼핑몰·링크를 한 번에.</p>
+            </div>
+            <div class="border-l-2 border-mint pl-5">
+                <p class="text-[16px] font-semibold tracking-tight text-ink">02</p>
+                <h3 class="mt-3 text-[19px] font-medium">우선순위</h3>
+                <p class="mt-2 text-[15px] leading-relaxed text-muted">별 1~5로 갖고 싶은 순서대로.</p>
+            </div>
+            <div class="border-l-2 border-mint pl-5">
+                <p class="text-[16px] font-semibold tracking-tight text-ink">03</p>
+                <h3 class="mt-3 text-[19px] font-medium">예산</h3>
+                <p class="mt-2 text-[15px] leading-relaxed text-muted">남은 금액을 한눈에.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

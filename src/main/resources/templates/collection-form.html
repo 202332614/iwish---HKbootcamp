@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${editing} ? '룩북 수정 · iwish' : '룩북 만들기 · iwish'">룩북 만들기 · iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+
+    <header th:replace="~{fragments/layout :: appHeader('collections')}"></header>
+
+    <main class="mx-auto max-w-2xl px-6 py-12 lg:py-16">
+        <a th:href="@{/collections}" class="mb-6 inline-block text-[14px] font-normal text-muted hover:text-ink">← 룩북</a>
+        <h1 class="mb-8 text-[26px] font-semibold tracking-tight" th:text="${editing} ? '룩북 수정' : '룩북 만들기'">룩북 만들기</h1>
+
+        <!-- POST /collections or /collections/{id} (CSRF auto) -->
+        <form th:action="@{${actionUrl}}" th:object="${collectionForm}" method="post" class="space-y-6">
+            <div>
+                <label for="name" class="label">이름</label>
+                <input type="text" id="name" th:field="*{name}" class="input" placeholder="예: 여름 데일리룩">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+            </div>
+
+            <div>
+                <span class="label">코디 느낌</span>
+                <div class="flex flex-wrap gap-2">
+                    <label th:each="s : ${styleTags}" class="cursor-pointer">
+                        <input type="radio" name="styleTag" th:value="${s}" th:checked="${collectionForm.styleTag == s}" required class="peer sr-only">
+                        <span th:text="${s}"
+                              class="block rounded-full border border-line bg-surface px-4 py-2 text-[14px] font-medium text-muted transition hover:border-mint hover:text-mint-deep peer-checked:border-mint peer-checked:bg-mint peer-checked:text-white">mood</span>
+                    </label>
+                </div>
+                <p th:if="${#fields.hasErrors('styleTag')}" th:errors="*{styleTag}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+            </div>
+
+            <div>
+                <label for="description" class="label">설명</label>
+                <textarea id="description" th:field="*{description}" rows="3" class="input min-h-[92px] resize-none" placeholder="간단한 메모 (선택)"></textarea>
+                <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="mt-1.5 text-[13px] font-medium text-danger"></p>
+            </div>
+
+            <div>
+                <label for="coverImageUrl" class="label">커버 이미지 URL</label>
+                <input type="url" id="coverImageUrl" th:field="*{coverImageUrl}" class="input" placeholder="https://image...">
+                <p class="mt-1.5 text-[13px] font-normal text-muted">비우면 담긴 첫 위시템 이미지를 커버로 사용해요.</p>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="btn-primary px-7 py-3 text-[15px]" th:text="${editing} ? 'save' : 'create'">create</button>
+                <a th:href="@{/collections}" class="btn-line px-7 py-3 text-[15px]">cancel</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

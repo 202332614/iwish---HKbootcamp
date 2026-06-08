@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${collection.name} + ' · iwish'">iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+
+    <header th:replace="~{fragments/layout :: appHeader('collections')}"></header>
+
+    <main class="mx-auto max-w-app px-6 py-10 lg:px-8 lg:py-14">
+        <a th:href="@{/collections}" class="text-[15px] font-normal text-muted hover:text-ink">← lookbooks</a>
+
+        <!-- header -->
+        <div class="mt-6 flex items-start justify-between gap-4 border-b border-line pb-8">
+            <div>
+                <span class="chip" th:text="${collection.styleTag}">mood</span>
+                <h1 class="mt-3 text-[30px] font-semibold tracking-tight" th:text="${collection.name}">name</h1>
+                <p th:if="${collection.description}" class="mt-2 text-[16px] font-normal text-muted" th:text="${collection.description}">desc</p>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+                <a th:href="@{'/collections/' + ${collection.id} + '/edit'}"
+                   class="inline-flex items-center justify-center rounded-control bg-[#F1F2F4] px-5 py-2.5 text-[15px] font-medium text-ink transition hover:bg-[#E6E8EC]">edit</a>
+                <form th:action="@{'/collections/' + ${collection.id} + '/delete'}" method="post"
+                      onsubmit="return confirm('룩북을 삭제할까요? (담긴 위시템은 유지돼요)');">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center rounded-control bg-[#FCEDED] px-5 py-2.5 text-[15px] font-medium text-danger transition hover:bg-[#F7DCDC]">delete</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- total -->
+        <div class="flex items-baseline justify-between py-6">
+            <span class="text-[16px] font-normal text-muted tnum" th:text="${#lists.size(collection.items)} + '개 아이템'">0개 아이템</span>
+            <div class="text-right">
+                <p class="text-[16px] font-medium tracking-wide text-muted">코디 총액</p>
+                <p class="tnum mt-1 text-[34px] font-semibold tracking-tight text-mint-deep">₩<span th:text="${#numbers.formatInteger(totalPrice, 0, 'COMMA')}">0</span></p>
+            </div>
+        </div>
+
+        <!-- add items -->
+        <section class="mt-4 border-t border-line pt-10">
+            <div class="flex items-center justify-between">
+                <h2 class="text-[20px] font-medium tracking-tight">add wish!</h2>
+                <a th:href="@{/wishlist/new}" class="btn-primary-sm">wish +</a>
+            </div>
+            <p th:if="${#lists.isEmpty(addableWishes)}" class="mt-4 text-[16px] font-normal text-muted">
+                담을 위시템이 없어요. 새 상품을 추가해보세요.
+            </p>
+            <div th:unless="${#lists.isEmpty(addableWishes)}" class="mt-5 grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
+                <article th:each="w : ${addableWishes}" class="pcard group card overflow-hidden">
+                    <div class="relative aspect-[3/4] overflow-hidden bg-[#F3F4F6]">
+                        <div class="absolute inset-0 grid place-items-center"><span class="text-[14px] text-muted" th:text="${w.category}">cat</span></div>
+                        <img th:if="${w.thumbnailUrl}" th:src="${w.thumbnailUrl}" alt="" th:alt="${w.name}"
+                             class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-3">
+                        <h3 class="truncate text-[15px] font-medium" th:text="${w.name}">name</h3>
+                        <p class="tnum mt-0.5 text-[14px] font-normal text-muted">₩<span th:text="${#numbers.formatInteger(w.price, 0, 'COMMA')}">0</span></p>
+                        <form th:action="@{'/collections/' + ${collection.id} + '/items'}" method="post" class="mt-2">
+                            <input type="hidden" name="wishId" th:value="${w.id}">
+                            <button type="submit" class="btn-line-sm w-full">+ add</button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- the look -->
+        <section class="mt-14">
+            <h2 class="mb-6 text-[22px] font-semibold tracking-tight">the look</h2>
+            <div th:if="${#lists.isEmpty(collection.items)}" class="py-16 text-center text-[15px] font-normal text-muted">
+                아직 담긴 위시템이 없어요.
+            </div>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+                <article th:each="w : ${collection.items}" class="pcard group card overflow-hidden">
+                    <div class="relative aspect-[3/4] overflow-hidden bg-[#F3F4F6]">
+                        <div class="absolute inset-0 grid place-items-center"><span class="text-[15px] text-muted" th:text="${w.category}">cat</span></div>
+                        <img th:if="${w.thumbnailUrl}" th:src="${w.thumbnailUrl}" alt="" th:alt="${w.name}"
+                             class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+                        <span class="chip absolute left-3 top-3" th:text="${w.category}">cat</span>
+                    </div>
+                    <div class="p-4">
+                        <p class="truncate text-[14px] font-normal text-muted" th:text="${w.shopName} ?: '&nbsp;'">shop</p>
+                        <h3 class="mt-0.5 truncate text-[17px] font-medium" th:text="${w.name}">name</h3>
+                        <p class="tnum mt-1 text-[17px] font-medium">₩<span th:text="${#numbers.formatInteger(w.price, 0, 'COMMA')}">0</span></p>
+                        <div class="mt-3 flex items-center gap-3 border-t border-line pt-3 text-[14px]">
+                            <a th:if="${w.productUrl}" th:href="${w.productUrl}" target="_blank" rel="noopener" class="font-normal text-mint-deep hover:underline">view ↗</a>
+                            <form th:action="@{'/collections/' + ${collection.id} + '/items/' + ${w.id} + '/delete'}" method="post">
+                                <button type="submit" class="font-medium text-muted transition hover:text-danger">remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

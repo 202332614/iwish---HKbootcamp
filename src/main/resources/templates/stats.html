@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>stats · iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+
+    <header th:replace="~{fragments/layout :: appHeader('stats')}"></header>
+
+    <main class="mx-auto max-w-app px-6 py-10 lg:px-8 lg:py-14">
+        <h1 class="mb-8 text-[24px] font-semibold tracking-tight">stats</h1>
+
+        <!-- empty -->
+        <div th:if="${stats.empty}" class="py-24 text-center">
+            <p class="text-[17px] font-medium text-ink">아직 통계가 없어요</p>
+            <p class="mt-1.5 text-[15px] text-muted"><a th:href="@{/wishlist/new}" class="text-mint-deep hover:underline">위시템 추가</a></p>
+        </div>
+
+        <div th:unless="${stats.empty}" class="space-y-6">
+            <!-- 요약 -->
+            <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div class="card p-6">
+                    <p class="text-[15px] font-medium tracking-wide text-muted">총 위시템</p>
+                    <p class="tnum mt-2 text-[30px] font-semibold tracking-tight text-ink" th:text="${stats.totalCount}">0</p>
+                </div>
+                <div class="card p-6">
+                    <p class="text-[15px] font-medium tracking-wide text-muted">총 금액</p>
+                    <p class="tnum mt-2 text-[30px] font-semibold tracking-tight text-ink">₩<span th:text="${#numbers.formatInteger(stats.totalAmount, 0, 'COMMA')}">0</span></p>
+                </div>
+                <div class="card p-6">
+                    <p class="text-[15px] font-medium tracking-wide text-muted">구매완료</p>
+                    <p class="tnum mt-2 text-[30px] font-semibold tracking-tight text-mint-deep" th:text="${stats.purchasedCount} + ' / ' + ${stats.totalCount}">0 / 0</p>
+                </div>
+                <div class="card p-6">
+                    <p class="text-[15px] font-medium tracking-wide text-muted">구매 금액</p>
+                    <p class="tnum mt-2 text-[30px] font-semibold tracking-tight text-ink">₩<span th:text="${#numbers.formatInteger(stats.purchasedAmount, 0, 'COMMA')}">0</span></p>
+                </div>
+            </section>
+
+            <!-- 구매 완료율 -->
+            <section class="card p-7">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-[16px] font-medium tracking-tight text-ink">구매 완료율</h2>
+                    <span class="tnum text-[22px] font-semibold text-mint-deep" th:text="${stats.completionRate} + '%'">0%</span>
+                </div>
+                <div class="h-1.5 w-full overflow-hidden rounded-full bg-line">
+                    <div class="h-full rounded-full bg-mint transition-all duration-500" th:style="'width:' + ${stats.completionRate} + '%'"></div>
+                </div>
+                <p class="mt-3 text-[15px] font-normal text-muted tnum" th:text="'전체 ' + ${stats.totalCount} + '개 중 ' + ${stats.purchasedCount} + '개 구매완료'">전체 0개 중 0개 구매완료</p>
+            </section>
+
+            <!-- 카테고리별 금액 비중 -->
+            <section class="card p-7">
+                <h2 class="mb-5 text-[16px] font-medium tracking-tight text-ink">카테고리별 금액 비중</h2>
+                <div class="space-y-5">
+                    <div th:each="c : ${stats.categories}">
+                        <div class="mb-2 flex items-baseline justify-between text-[15px]">
+                            <span class="font-medium text-ink"><span th:text="${c.category}">cat</span> <span class="font-normal text-muted tnum" th:text="${c.count} + '개'">0개</span></span>
+                            <span class="tnum font-normal text-muted">₩<span th:text="${#numbers.formatInteger(c.amount, 0, 'COMMA')}">0</span> · <span th:text="${c.percent} + '%'">0%</span></span>
+                        </div>
+                        <div class="h-1.5 w-full overflow-hidden rounded-full bg-line">
+                            <div class="h-full rounded-full bg-mint" th:style="'width:' + ${c.percent} + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 갖고 싶은 정도 -->
+            <section class="card p-7">
+                <h2 class="mb-5 text-[16px] font-medium tracking-tight text-ink">갖고 싶은 정도</h2>
+                <div class="space-y-5">
+                    <div th:each="p : ${stats.priorities}">
+                        <div class="mb-2 flex items-baseline justify-between text-[15px]">
+                            <span class="font-medium text-mint text-[16px]" th:text="${'★'.repeat(6 - p.priority)}">★</span>
+                            <span class="tnum font-normal text-muted"><span th:text="${p.count} + '개'">0개</span> · <span th:text="${p.percent} + '%'">0%</span></span>
+                        </div>
+                        <div class="h-1.5 w-full overflow-hidden rounded-full bg-line">
+                            <div class="h-full rounded-full bg-mint" th:style="'width:' + ${p.percent} + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

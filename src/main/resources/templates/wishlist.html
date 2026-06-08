@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my wishlist · iwish</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+
+    <header th:replace="~{fragments/layout :: appHeader('wishlist')}"></header>
+
+    <main class="mx-auto max-w-app px-6 py-10 lg:px-8 lg:py-14">
+
+        <!-- ===================== 예산 ===================== -->
+        <section class="card p-7 lg:p-8">
+            <div class="mb-7 flex flex-wrap items-center justify-between gap-4">
+                <h2 class="text-[24px] font-semibold tracking-tight text-ink">wishlist</h2>
+                <form th:action="@{/budget}" method="post" class="flex items-center gap-2">
+                    <div class="relative">
+                        <input type="number" name="budget" min="0" step="1000" th:value="${summary.budget}"
+                               aria-label="예산" class="input w-44 pr-8 text-right tnum">
+                        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] text-muted">₩</span>
+                    </div>
+                    <button type="submit" class="btn-primary">save</button>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 sm:grid-cols-3">
+                <div>
+                    <p class="text-[16px] font-medium tracking-wide text-muted">예산</p>
+                    <p class="tnum mt-2 text-[34px] font-semibold tracking-tight text-ink">
+                        ₩<span th:text="${#numbers.formatInteger(summary.budget, 0, 'COMMA')}">0</span>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-[16px] font-medium tracking-wide text-muted">위시 총액</p>
+                    <p class="tnum mt-2 text-[34px] font-semibold tracking-tight text-ink">
+                        ₩<span th:text="${#numbers.formatInteger(summary.totalWishPrice, 0, 'COMMA')}">0</span>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-[16px] font-medium tracking-wide text-muted">잔액</p>
+                    <p class="tnum mt-2 text-[34px] font-semibold tracking-tight"
+                       th:classappend="${summary.remaining < 0} ? 'text-danger' : 'text-mint-deep'">
+                        ₩<span th:text="${#numbers.formatInteger(summary.remaining, 0, 'COMMA')}">0</span>
+                    </p>
+                </div>
+            </div>
+
+            <div th:if="${summary.budgetSet}" class="mt-7">
+                <div class="mb-2 flex items-center justify-between text-[16px] font-medium">
+                    <span class="tracking-wide text-muted">사용률</span>
+                    <span class="tnum" th:classappend="${summary.over} ? 'text-danger' : 'text-mint-deep'" th:text="${summary.rawUsagePercent} + '%'">0%</span>
+                </div>
+                <div class="h-1.5 w-full overflow-hidden rounded-full bg-line">
+                    <div class="h-full rounded-full transition-all duration-500"
+                         th:classappend="${summary.over} ? 'bg-danger' : 'bg-mint'"
+                         th:style="'width:' + ${summary.usagePercent} + '%'"></div>
+                </div>
+                <p th:if="${summary.over}" class="mt-3 text-[15px] font-medium text-danger">
+                    예산 초과 — ₩<span class="tnum" th:text="${#numbers.formatInteger(-summary.remaining, 0, 'COMMA')}">0</span>
+                </p>
+            </div>
+            <p th:unless="${summary.budgetSet}" class="mt-6 text-[15px] font-normal text-muted">예산을 설정하면 사용률이 표시돼요.</p>
+        </section>
+
+        <!-- ===================== 필터 ===================== -->
+        <section class="card mt-8 p-5 lg:p-6">
+            <form th:action="@{/wishlist}" th:object="${filter}" method="get" class="flex flex-wrap items-end gap-3">
+                <div class="min-w-[200px] flex-1">
+                    <label for="q" class="label pl-[5px]">검색</label>
+                    <input type="text" id="q" th:field="*{q}" class="input" placeholder="상품명·쇼핑몰">
+                </div>
+                <div class="w-36">
+                    <label for="fCategory" class="label pl-[5px]">카테고리</label>
+                    <select id="fCategory" th:field="*{category}" class="input kk-select">
+                        <option value="">전체</option>
+                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c}">cat</option>
+                    </select>
+                </div>
+                <div class="w-28">
+                    <label for="fPriority" class="label pl-[5px]">우선순위</label>
+                    <select id="fPriority" th:field="*{priority}" class="input kk-select">
+                        <option value="">전체</option>
+                        <option th:value="1">1</option><option th:value="2">2</option><option th:value="3">3</option>
+                        <option th:value="4">4</option><option th:value="5">5</option>
+                    </select>
+                </div>
+                <div class="w-32">
+                    <label for="fPurchased" class="label pl-[5px]">구매여부</label>
+                    <select id="fPurchased" th:field="*{purchased}" class="input kk-select">
+                        <option value="">전체</option>
+                        <option th:value="false">미구매</option>
+                        <option th:value="true">구매완료</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">search</button>
+                <a th:href="@{/wishlist}" class="btn-line">reset</a>
+            </form>
+        </section>
+
+        <!-- ===================== 목록 헤더 ===================== -->
+        <div class="mt-12 mb-6 flex items-end justify-between border-b border-line pb-4">
+            <h1 class="text-[22px] font-semibold tracking-tight">
+                내 위시리스트 <span class="ml-1 text-[16px] font-normal text-muted tnum" th:text="${#lists.size(wishes)}">0</span>
+            </h1>
+            <a th:href="@{/wishlist/new}" class="btn-primary-sm">+ new</a>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div th:if="${#lists.isEmpty(wishes)}" class="py-24 text-center">
+            <p class="text-[17px] font-medium text-ink" th:if="${filter.active}">검색 결과가 없어요</p>
+            <p class="mt-1.5 text-[15px] text-muted" th:if="${filter.active}">
+                <a th:href="@{/wishlist}" class="text-mint-deep hover:underline">필터 초기화</a>
+            </p>
+            <p class="text-[17px] font-medium text-ink" th:unless="${filter.active}">아직 담은 상품이 없어요</p>
+            <p class="mt-1.5 text-[15px] text-muted" th:unless="${filter.active}">
+                <a th:href="@{/wishlist/new}" class="text-mint-deep hover:underline">첫 상품 담기</a>
+            </p>
+        </div>
+
+        <!-- ===================== 상품 그리드 ===================== -->
+        <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <article th:each="w : ${wishes}" class="pcard group card overflow-hidden" th:classappend="${w.purchased} ? 'opacity-60' : ''">
+                <!-- 이미지 -->
+                <div class="relative aspect-[3/4] overflow-hidden bg-[#F3F4F6]">
+                    <div class="absolute inset-0 grid place-items-center">
+                        <span class="text-[15px] font-normal text-muted" th:text="${w.category}">category</span>
+                    </div>
+                    <img th:if="${w.thumbnailUrl}" th:src="${w.thumbnailUrl}" alt="" th:alt="${w.name}"
+                         class="absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none'">
+                    <span class="chip absolute left-3 top-3" th:text="${w.category}">category</span>
+                    <span th:if="${w.purchased}"
+                          class="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-mint text-white shadow-sm">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    </span>
+                </div>
+                <!-- 정보 -->
+                <div class="p-4">
+                    <p class="truncate text-[14px] font-normal text-muted" th:text="${w.shopName} ?: '&nbsp;'">shop</p>
+                    <h3 class="mt-0.5 truncate text-[17px] font-medium text-ink"
+                        th:classappend="${w.purchased} ? 'line-through decoration-muted/60' : ''" th:text="${w.name}">name</h3>
+                    <div class="mt-1.5 flex items-center justify-between">
+                        <p class="tnum text-[17px] font-medium text-ink">₩<span th:text="${#numbers.formatInteger(w.price, 0, 'COMMA')}">0</span></p>
+                        <span class="text-[14px] tracking-tight" th:title="'우선순위 ' + ${w.priority}">
+                            <span class="text-mint" th:text="${'★'.repeat(6 - w.priority)}">★</span><span class="text-line" th:text="${'★'.repeat(w.priority - 1)}">★</span>
+                        </span>
+                    </div>
+                    <a th:if="${w.productUrl}" th:href="${w.productUrl}" target="_blank" rel="noopener"
+                       class="mt-2 inline-block text-[14px] font-normal text-mint-deep hover:underline">view ↗</a>
+
+                    <div class="mt-3 flex items-center gap-3 border-t border-line pt-3 text-[14px]">
+                        <form th:action="@{'/wishlist/' + ${w.id} + '/toggle'}" method="post">
+                            <button type="submit" class="font-medium text-muted transition hover:text-mint-deep"
+                                    th:text="${w.purchased} ? 'undo' : 'purchased'">purchased</button>
+                        </form>
+                        <span class="text-line">·</span>
+                        <a th:href="@{'/wishlist/' + ${w.id} + '/edit'}" class="font-medium text-muted transition hover:text-ink">edit</a>
+                        <span class="text-line">·</span>
+                        <form th:action="@{'/wishlist/' + ${w.id} + '/delete'}" method="post" onsubmit="return confirm('삭제할까요?');">
+                            <button type="submit" class="font-medium text-muted transition hover:text-danger">delete</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>
